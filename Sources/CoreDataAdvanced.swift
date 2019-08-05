@@ -51,9 +51,12 @@ public extension NSManagedObjectContext {
         return context
     }
     
-    func inject(in viewController: UIViewController) {
+    func inject(in viewController: UIViewController?) {
+        guard let viewController = viewController else { return }
+        
         guard let vc = viewController as? ManagedObjectContextSettable
             else { fatalError("Unable to set \(viewController) as ManagedObjectContextSettable") }
+        
         vc.managedObjectContext = self
     }
 }
