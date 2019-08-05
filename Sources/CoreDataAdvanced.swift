@@ -11,14 +11,20 @@
 import CoreData
 import UIKit
 
-public class ManagedObject: NSManagedObject {}
+open class ManagedObject: NSManagedObject {}
 
 public protocol ManagedObjectContextSettable: AnyObject {
     var managedObjectContext: NSManagedObjectContext! { get set }
 }
 
 public extension ManagedObjectContextSettable {
-    func inject(in segue: UIStoryboardSegue) {
+    func injectManagedObjectContext(in viewController: UIViewController) {
+        guard let vc = viewController as? ManagedObjectContextSettable
+            else { fatalError("Unable to set \(viewController) as ManagedObjectContextSettable") }
+        vc.managedObjectContext = managedObjectContext
+    }
+
+    func injectManagedObjectContext(in segue: UIStoryboardSegue) {
         if let vc = segue.destination as? ManagedObjectContextSettable {
             vc.managedObjectContext = managedObjectContext
         }
