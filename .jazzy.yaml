@@ -1,0 +1,7 @@
+# CoreDataAdvanced document generator jazzy settings
+
+copyright: Copyright 2019 Grincheux
+author: Jérôme Danthinne
+xcodebuild_arguments: [-target, CoreDataAdvanced-iOS]
+clean: true
+output: ./Documentation
