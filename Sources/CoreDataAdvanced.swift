@@ -9,9 +9,45 @@
 // Include Foundation
 @_exported import Foundation
 import CoreData
+import UIKit
 
 public class ManagedObject: NSManagedObject {}
 
-protocol ManagedObjectContextSettable: AnyObject {
+public protocol ManagedObjectContextSettable: AnyObject {
     var managedObjectContext: NSManagedObjectContext! { get set }
+}
+
+public extension ManagedObjectContextSettable {
+    func inject(in segue: UIStoryboardSegue) {
+        if let vc = segue.destination as? ManagedObjectContextSettable {
+            vc.managedObjectContext = managedObjectContext
+        }
+    }
+}
+
+public extension NSManagedObjectContext {
+    static func createMainContext(with models: [AnyClass],
+                                  filename: String,
+                                  in directory: FileManager.SearchPathDirectory = .documentDirectory)
+        -> NSManagedObjectContext {
+        let bundles = models.map { Bundle(for: $0) }
+        
+        guard let model = NSManagedObjectModel.mergedModel(from: bundles)
+            else { fatalError("model not found") }
+        
+        let storeURL = FileManager.default
+            .urls(for: directory, in: .userDomainMask)
+            .first?
+            .appendingPathComponent(filename)
+        
+        let psc = NSPersistentStoreCoordinator(managedObjectModel: model)
+        try! psc.addPersistentStore(ofType: NSSQLiteStoreType,
+                                    configurationName: nil,
+                                    at: storeURL,
+                                    options: nil)
+        let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        context.persistentStoreCoordinator = psc
+        
+        return context
+    }
 }
