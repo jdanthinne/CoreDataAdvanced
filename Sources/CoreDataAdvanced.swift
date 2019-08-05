@@ -8,7 +8,7 @@
 
 // Include Foundation
 @_exported import Foundation
-import CoreData
+@_exported import CoreData
 import UIKit
 
 open class ManagedObject: NSManagedObject {}
