@@ -18,12 +18,6 @@ public protocol ManagedObjectContextSettable: AnyObject {
 }
 
 public extension ManagedObjectContextSettable {
-    func injectManagedObjectContext(in viewController: UIViewController) {
-        guard let vc = viewController as? ManagedObjectContextSettable
-            else { fatalError("Unable to set \(viewController) as ManagedObjectContextSettable") }
-        vc.managedObjectContext = managedObjectContext
-    }
-
     func injectManagedObjectContext(in segue: UIStoryboardSegue) {
         if let vc = segue.destination as? ManagedObjectContextSettable {
             vc.managedObjectContext = managedObjectContext
@@ -55,5 +49,11 @@ public extension NSManagedObjectContext {
         context.persistentStoreCoordinator = psc
         
         return context
+    }
+    
+    func inject(in viewController: UIViewController) {
+        guard let vc = viewController as? ManagedObjectContextSettable
+            else { fatalError("Unable to set \(viewController) as ManagedObjectContextSettable") }
+        vc.managedObjectContext = self
     }
 }
