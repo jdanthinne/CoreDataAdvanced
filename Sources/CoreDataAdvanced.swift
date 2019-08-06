@@ -13,20 +13,47 @@ import UIKit
 
 open class ManagedObject: NSManagedObject {}
 
+public protocol ManagedObjectType: class {
+    static var entityName: String { get }
+    static var defaultSortDescriptors: [NSSortDescriptor] { get }
+}
+
+extension ManagedObjectType {
+    public static var defaultSortDescriptors: [NSSortDescriptor] {
+        return []
+    }
+    
+    public static var defaultFetchRequest: NSFetchRequest<ManagedObject> {
+        let request = NSFetchRequest<ManagedObject>(entityName: entityName)
+        request.sortDescriptors = defaultSortDescriptors
+        return request
+    }
+}
+
 public protocol ManagedObjectContextSettable: AnyObject {
     var managedObjectContext: NSManagedObjectContext! { get set }
 }
 
-public extension ManagedObjectContextSettable {
-    func injectManagedObjectContext(in segue: UIStoryboardSegue) {
+extension ManagedObjectContextSettable {
+    /// Pass the current object context to the destination view controller of the segue.
+    ///
+    /// - Parameter segue: the invoked segue
+    public func injectManagedObjectContext(in segue: UIStoryboardSegue) {
         if let viewController = segue.destination as? ManagedObjectContextSettable {
             viewController.managedObjectContext = managedObjectContext
         }
     }
 }
 
-public extension NSManagedObjectContext {
-    static func createMainContext(with models: [AnyClass],
+extension NSManagedObjectContext {
+    /// Create the app main context.
+    ///
+    /// - Parameters:
+    ///   - models: list of model classes
+    ///   - filename: filename of the file written to disk
+    ///   - directory: where the file will be written
+    /// - Returns: the created NSManagedObjectContext
+    public static func createMainContext(with models: [AnyClass],
                                   filename: String,
                                   in directory: FileManager.SearchPathDirectory = .documentDirectory)
         -> NSManagedObjectContext {
@@ -56,7 +83,10 @@ public extension NSManagedObjectContext {
             }
     }
     
-    func inject(in viewController: UIViewController?) {
+    /// Pass the current object context to a view controller.
+    ///
+    /// - Parameter viewController: the view controller that will receive the context
+    public func inject(in viewController: UIViewController?) {
         guard let viewController = viewController
             else { return }
         
