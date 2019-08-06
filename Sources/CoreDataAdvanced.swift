@@ -9,7 +9,11 @@
 // Include Foundation
 @_exported import CoreData
 @_exported import Foundation
+#if os(OSX)
+import AppKit
+#else
 import UIKit
+#endif
 
 open class ManagedObject: NSManagedObject {}
 
@@ -38,10 +42,41 @@ extension ManagedObjectContextSettable {
     /// Pass the current object context to the destination view controller of the segue.
     ///
     /// - Parameter segue: the invoked segue
+    #if os(OSX)
+    public func injectManagedObjectContext(in segue: NSStoryboardSegue) {
+        if let viewController = segue.destinationController as? ManagedObjectContextSettable {
+            viewController.managedObjectContext = managedObjectContext
+        }
+    }
+    #else
     public func injectManagedObjectContext(in segue: UIStoryboardSegue) {
         if let viewController = segue.destination as? ManagedObjectContextSettable {
             viewController.managedObjectContext = managedObjectContext
         }
+    }
+    #endif
+}
+
+final class PersistentContainer: NSPersistentContainer {
+    static var applicationGroupIdentifier: String?
+    
+    init(models: [AnyClass], name: String, applicationGroupIdentifier: String?) {
+        PersistentContainer.applicationGroupIdentifier = applicationGroupIdentifier
+        guard let model = NSManagedObjectModel.mergedModel(from: models.map { Bundle(for: $0) })
+            else { fatalError("Unable to create CoreData models") }
+        
+        super.init(name: name, managedObjectModel: model)
+    }
+    
+    override class func defaultDirectoryURL() -> URL {
+        var url = super.defaultDirectoryURL()
+        if let groupIdentifier = applicationGroupIdentifier,
+            let newURL = FileManager.default.containerURL(
+                forSecurityApplicationGroupIdentifier: groupIdentifier) {
+            url = newURL
+        }
+        
+        return url
     }
 }
 
@@ -50,42 +85,39 @@ extension NSManagedObjectContext {
     ///
     /// - Parameters:
     ///   - models: list of model classes
-    ///   - filename: filename of the file written to disk
-    ///   - directory: where the file will be written
+    ///   - modelName: name of the CoreData model
+    ///   - applicationGroupIdentifier: optional application group identifier
     /// - Returns: the created NSManagedObjectContext
     public static func createMainContext(with models: [AnyClass],
-                                  filename: String,
-                                  in directory: FileManager.SearchPathDirectory = .documentDirectory)
+                                         modelName: String,
+                                         applicationGroupIdentifier: String?)
         -> NSManagedObjectContext {
-            let bundles = models.map { Bundle(for: $0) }
+            let container = PersistentContainer(models: models,
+                                                name: modelName,
+                                                applicationGroupIdentifier: applicationGroupIdentifier)
+            container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+                if let error = error {
+                    NSLog("CoreData initialization error: \(error)")
+                }
+            })
             
-            guard let model = NSManagedObjectModel.mergedModel(from: bundles)
-                else { fatalError("model not found") }
-            
-            let storeURL = FileManager.default
-                .urls(for: directory, in: .userDomainMask)
-                .first?
-                .appendingPathComponent(filename)
-            
-            let psc = NSPersistentStoreCoordinator(managedObjectModel: model)
-            
-            do {
-                try psc.addPersistentStore(ofType: NSSQLiteStoreType,
-                                           configurationName: nil,
-                                           at: storeURL,
-                                           options: nil)
-                let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-                context.persistentStoreCoordinator = psc
-                
-                return context
-            } catch {
-                fatalError("Unable to add Persistent Store: \(error)")
-            }
+            return container.viewContext
     }
     
     /// Pass the current object context to a view controller.
     ///
     /// - Parameter viewController: the view controller that will receive the context
+    #if os(OSX)
+    public func inject(in viewController: NSViewController?) {
+        guard let viewController = viewController
+            else { return }
+        
+        guard let viewControllerToInject = viewController as? ManagedObjectContextSettable
+            else { fatalError("Unable to set \(viewController) as ManagedObjectContextSettable") }
+        
+        viewControllerToInject.managedObjectContext = self
+    }
+    #else
     public func inject(in viewController: UIViewController?) {
         guard let viewController = viewController
             else { return }
@@ -95,4 +127,5 @@ extension NSManagedObjectContext {
         
         viewControllerToInject.managedObjectContext = self
     }
+    #endif
 }
