@@ -90,7 +90,7 @@ extension NSManagedObjectContext {
     /// - Returns: the created NSManagedObjectContext
     public static func createMainContext(with models: [AnyClass],
                                          modelName: String,
-                                         applicationGroupIdentifier: String?)
+                                         applicationGroupIdentifier: String? = nil)
         -> NSManagedObjectContext {
             let container = PersistentContainer(models: models,
                                                 name: modelName,
