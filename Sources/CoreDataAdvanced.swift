@@ -44,15 +44,11 @@ extension ManagedObjectContextSettable {
     /// - Parameter segue: the invoked segue
     #if os(OSX)
     public func injectManagedObjectContext(in segue: NSStoryboardSegue) {
-        if let viewController = segue.destinationController as? ManagedObjectContextSettable {
-            viewController.managedObjectContext = managedObjectContext
-        }
+        managedObjectContext.inject(in: segue.destinationController as? NSViewController)
     }
     #else
     public func injectManagedObjectContext(in segue: UIStoryboardSegue) {
-        if let viewController = segue.destination as? ManagedObjectContextSettable {
-            viewController.managedObjectContext = managedObjectContext
-        }
+        managedObjectContext.inject(in: segue.destination)
     }
     #endif
 }
@@ -112,20 +108,23 @@ extension NSManagedObjectContext {
         guard let viewController = viewController
             else { return }
         
-        guard let viewControllerToInject = viewController as? ManagedObjectContextSettable
-            else { fatalError("Unable to set \(viewController) as ManagedObjectContextSettable") }
-        
-        viewControllerToInject.managedObjectContext = self
+        if let viewControllerToInject = viewController as? ManagedObjectContextSettable {
+            viewControllerToInject.managedObjectContext = self
+        }
     }
     #else
     public func inject(in viewController: UIViewController?) {
         guard let viewController = viewController
             else { return }
         
-        guard let viewControllerToInject = viewController as? ManagedObjectContextSettable
-            else { fatalError("Unable to set \(viewController) as ManagedObjectContextSettable") }
+        if let viewControllerToInject = viewController as? ManagedObjectContextSettable {
+            viewControllerToInject.managedObjectContext = self
+        }
         
-        viewControllerToInject.managedObjectContext = self
+        if let navigationController = viewController as? UINavigationController,
+            let viewControllerToInject = navigationController.viewControllers.first as? ManagedObjectContextSettable {
+            viewControllerToInject.managedObjectContext = self
+        }
     }
     #endif
 }
