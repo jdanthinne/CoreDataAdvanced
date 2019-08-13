@@ -18,6 +18,8 @@ import UIKit
 open class ManagedObject: NSManagedObject {}
 
 public protocol ManagedObjectType: class {
+    associatedtype Entity: ManagedObject
+    
     static var entityName: String { get }
     static var defaultSortDescriptors: [NSSortDescriptor] { get }
 }
@@ -27,8 +29,8 @@ extension ManagedObjectType {
         return []
     }
     
-    public static var defaultFetchRequest: NSFetchRequest<ManagedObject> {
-        let request = NSFetchRequest<ManagedObject>(entityName: entityName)
+    public static var defaultFetchRequest: NSFetchRequest<Entity> {
+        let request = NSFetchRequest<Entity>(entityName: entityName)
         request.sortDescriptors = defaultSortDescriptors
         return request
     }
