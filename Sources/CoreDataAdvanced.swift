@@ -11,7 +11,7 @@
 @_exported import Foundation
 #if os(OSX)
 import AppKit
-#else
+#elseif !os(watchOS)
 import UIKit
 #endif
 
@@ -48,7 +48,7 @@ extension ManagedObjectContextSettable {
     public func injectManagedObjectContext(in segue: NSStoryboardSegue) {
         managedObjectContext.inject(in: segue.destinationController as? NSViewController)
     }
-    #else
+    #elseif !os(watchOS)
     public func injectManagedObjectContext(in segue: UIStoryboardSegue) {
         managedObjectContext.inject(in: segue.destination)
     }
@@ -114,7 +114,7 @@ extension NSManagedObjectContext {
             viewControllerToInject.managedObjectContext = self
         }
     }
-    #else
+    #elseif !os(watchOS)
     public func inject(in viewController: UIViewController?) {
         guard let viewController = viewController
             else { return }
