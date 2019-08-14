@@ -52,7 +52,7 @@ pod 'CoreDataAdvanced'
 To integrate CoreDataAdvanced into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "Jérôme Danthinne/CoreDataAdvanced"
+github "jdanthinne/CoreDataAdvanced"
 ```
 
 Run `carthage update` to build the framework and drag the built `CoreDataAdvanced.framework` into your Xcode project. 
@@ -65,7 +65,7 @@ To integrate using Apple's [Swift Package Manager](https://swift.org/package-man
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/JérômeDanthinne/CoreDataAdvanced.git", from: "1.0.0")
+    .package(url: "https://github.com/jdanthinne/CoreDataAdvanced.git", from: "1.0.0")
 ]
 ```
 
