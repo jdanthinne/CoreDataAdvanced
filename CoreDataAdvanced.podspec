@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name                      = "CoreDataAdvanced"
-  s.version                   = "1.0.2"
+  s.version                   = "1.0.4"
   s.summary                   = "CoreDataAdvanced"
   s.homepage                  = "https://github.com/JérômeDanthinne/CoreDataAdvanced"
   s.license                   = { :type => "MIT", :file => "LICENSE" }

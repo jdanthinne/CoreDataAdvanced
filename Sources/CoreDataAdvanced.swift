@@ -91,17 +91,29 @@ extension NSManagedObjectContext {
     ///   - models: list of model classes
     ///   - modelName: name of the CoreData model
     ///   - applicationGroupIdentifier: optional application group identifier
+    ///   - isInMemory: if true, creates an in-memory context
     /// - Returns: the created NSManagedObjectContext
     public static func createMainContext(with models: [AnyClass],
                                          modelName: String,
-                                         applicationGroupIdentifier: String? = nil)
+                                         applicationGroupIdentifier: String? = nil,
+                                         isInMemory: Bool = false)
         -> NSManagedObjectContext {
             let container = PersistentContainer(models: models,
                                                 name: modelName,
                                                 applicationGroupIdentifier: applicationGroupIdentifier)
-            container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+            
+            if isInMemory {
+                let description = NSPersistentStoreDescription()
+                description.type = NSInMemoryStoreType
+                description.shouldAddStoreAsynchronously = false
+                container.persistentStoreDescriptions = [description]
+            }
+            
+            container.loadPersistentStores(completionHandler: { description, error in
                 if let error = error {
                     NSLog("CoreData initialization error: \(error)")
+                } else {
+                    print("CoreData initialized with description: \(description)")
                 }
             })
             
