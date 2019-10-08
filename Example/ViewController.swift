@@ -6,16 +6,15 @@
 //  Copyright © 2019 Grincheux. All rights reserved.
 //
 
-import UIKit
 import CoreDataAdvanced
+import UIKit
 
 // MARK: - ViewController
 
 /// The ViewController
 class ViewController: UIViewController {
-
     // MARK: Properties
-    
+
     /// The Label
     lazy var label: UILabel = {
         let label = UILabel()
@@ -26,18 +25,17 @@ class ViewController: UIViewController {
         label.textAlignment = .center
         return label
     }()
-    
+
     // MARK: View-Lifecycle
-    
+
     /// View did load
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .white
-    }
-    
-    /// LoadView
-    override func loadView() {
-        self.view = self.label
+        view.backgroundColor = .white
     }
 
+    /// LoadView
+    override func loadView() {
+        view = label
+    }
 }

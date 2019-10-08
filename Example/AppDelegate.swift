@@ -13,7 +13,6 @@ import UIKit
 /// The AppDelegate
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
     /// The UIWindow
     var window: UIWindow?
 
@@ -28,16 +27,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ///   - application: The UIApplication
     ///   - launchOptions: The LaunchOptions
     /// - Returns: The launch result
-    func application(_ application: UIApplication,
-                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    func application(_: UIApplication,
+                     didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Initialize UIWindow
-        self.window = .init(frame: UIScreen.main.bounds)
+        window = .init(frame: UIScreen.main.bounds)
         // Set RootViewController
-        self.window?.rootViewController = self.rootViewController
+        window?.rootViewController = rootViewController
         // Make Key and Visible
-        self.window?.makeKeyAndVisible()
+        window?.makeKeyAndVisible()
         // Return positive launch
         return true
     }
-
 }

@@ -10,11 +10,9 @@
 import XCTest
 
 class CoreDataAdvancedTests: XCTestCase {
-    
     static var allTests = [
         ("testExample", testExample),
     ]
-    
+
     func testExample() {}
-    
 }
