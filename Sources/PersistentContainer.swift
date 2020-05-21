@@ -9,31 +9,6 @@
 @_exported import CoreData
 
 @available(iOS 10.0, *)
-final class PersistentContainer: NSPersistentContainer {
-    static var applicationGroupIdentifier: String?
-
-    init(models: [AnyClass], name: String, applicationGroupIdentifier: String?) {
-        PersistentContainer.applicationGroupIdentifier = applicationGroupIdentifier
-        guard let model = NSManagedObjectModel.mergedModel(from: models.map { Bundle(for: $0) })
-        else { fatalError("Unable to create CoreData models") }
-
-        super.init(name: name, managedObjectModel: model)
-    }
-
-    override class func defaultDirectoryURL() -> URL {
-        var url = super.defaultDirectoryURL()
-        if let groupIdentifier = applicationGroupIdentifier,
-            let newURL = FileManager.default.containerURL(
-                forSecurityApplicationGroupIdentifier: groupIdentifier
-            ) {
-            url = newURL
-        }
-
-        return url
-    }
-}
-
-@available(iOS 10.0, *)
 extension NSManagedObjectContext {
     /// Create the app main context.
     ///
@@ -53,15 +28,26 @@ extension NSManagedObjectContext {
         if usingCloudKit, #available(iOS 13.0, *) {
             container = NSPersistentCloudKitContainer(name: modelName)
         } else {
-            container = PersistentContainer(models: models,
-                                            name: modelName,
-                                            applicationGroupIdentifier: applicationGroupIdentifier)
+            guard let model = NSManagedObjectModel.mergedModel(from: models.map { Bundle(for: $0) }) else {
+                fatalError("Unable to create CoreData model")
+            }
+
+            container = NSPersistentContainer(name: modelName, managedObjectModel: model)
         }
 
+        var storeDescription: NSPersistentStoreDescription?
         if isInMemory {
-            let description = NSPersistentStoreDescription()
-            description.type = NSInMemoryStoreType
-            description.shouldAddStoreAsynchronously = false
+            storeDescription = NSPersistentStoreDescription()
+            storeDescription?.type = NSInMemoryStoreType
+            storeDescription?.shouldAddStoreAsynchronously = false
+        } else if let groupIdentifier = applicationGroupIdentifier {
+            guard let fileContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupIdentifier) else {
+                fatalError("Shared file container could not be created.")
+            }
+            let storeURL = fileContainer.appendingPathComponent("\(modelName).sqlite")
+            storeDescription = NSPersistentStoreDescription(url: storeURL)
+        }
+        if let description = storeDescription {
             container.persistentStoreDescriptions = [description]
         }
 
