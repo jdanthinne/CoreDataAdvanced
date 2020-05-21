@@ -20,11 +20,11 @@ public protocol ManagedObjectType: AnyObject {
 
 extension ManagedObjectType {
     public static var defaultPredicate: NSPredicate? {
-        return nil
+        nil
     }
 
     public static var defaultSortDescriptors: [NSSortDescriptor] {
-        return []
+        []
     }
 
     public static var defaultFetchRequest: NSFetchRequest<Entity> {
