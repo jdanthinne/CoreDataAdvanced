@@ -46,11 +46,17 @@ extension NSManagedObjectContext {
     public static func createMainContext(with models: [AnyClass],
                                          modelName: String,
                                          applicationGroupIdentifier: String? = nil,
+                                         usingCloudKit: Bool = false,
                                          isInMemory: Bool = false)
         -> NSManagedObjectContext {
-        let container = PersistentContainer(models: models,
-                                            name: modelName,
-                                            applicationGroupIdentifier: applicationGroupIdentifier)
+            let container: NSPersistentContainer
+            if usingCloudKit, #available(iOS 13.0, *) {
+                container = NSPersistentCloudKitContainer(name: modelName)
+            } else {
+                container = PersistentContainer(models: models,
+                                                name: modelName,
+                                                applicationGroupIdentifier: applicationGroupIdentifier)
+            }
 
         if isInMemory {
             let description = NSPersistentStoreDescription()
