@@ -26,9 +26,6 @@ extension NSPersistentContainer {
         let container: NSPersistentContainer
         if usingCloudKit, #available(iOS 13.0, *) {
             let cloudKitContainer = NSPersistentCloudKitContainer(name: modelName)
-            #if DEBUG
-                try! cloudKitContainer.initializeCloudKitSchema()
-            #endif
             container = cloudKitContainer
         } else {
             container = NSPersistentContainer(name: modelName)
@@ -57,6 +54,12 @@ extension NSPersistentContainer {
                 print("CoreData initialized with description: \(description)")
             }
         })
+
+        #if DEBUG
+            if usingCloudKit {
+                try! cloudKitContainer.initializeCloudKitSchema()
+            }
+        #endif
 
         container.viewContext.automaticallyMergesChangesFromParent = true
 
