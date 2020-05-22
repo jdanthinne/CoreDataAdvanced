@@ -56,8 +56,10 @@ extension NSPersistentContainer {
         })
 
         #if DEBUG
-            if usingCloudKit {
-                try! cloudKitContainer.initializeCloudKitSchema()
+            if #available(iOS 13.0, *) {
+                if let cloudKitContainer = container as? NSPersistentCloudKitContainer {
+                    try! cloudKitContainer.initializeCloudKitSchema()
+                }
             }
         #endif
 
