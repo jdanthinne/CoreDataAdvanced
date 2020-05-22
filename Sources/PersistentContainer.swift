@@ -6,6 +6,7 @@
 //  Copyright © 2019 Grincheux. All rights reserved.
 //
 
+import CloudKit
 @_exported import CoreData
 
 @available(iOS 10.0, *)
@@ -63,7 +64,12 @@ extension NSPersistentContainer {
         if #available(iOS 13.0, *) {
             #if DEBUG
                 if let cloudKitContainer = container as? NSPersistentCloudKitContainer {
-                    try! cloudKitContainer.initializeCloudKitSchema()
+                    CKContainer.default().accountStatus { status, _ in
+                        print("iCloud status", status)
+                        if status == .available {
+                            try! cloudKitContainer.initializeCloudKitSchema()
+                        }
+                    }
                 }
 
             #endif
