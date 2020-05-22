@@ -15,37 +15,42 @@ extension NSPersistentContainer {
     /// - Parameters:
     ///   - modelName: name of the CoreData model
     ///   - applicationGroupIdentifier: optional application group identifier
-    ///   - usingCloudKit: If true, uses NSPersistentCloudKitContainer
+    ///   - cloudKitContainerIdentifier: If provided, uses NSPersistentCloudKitContainer
     ///   - isInMemory: if true, creates an in-memory context
     /// - Returns: the created NSPersistentContainer
     public static func create(modelName: String,
                               applicationGroupIdentifier: String? = nil,
-                              usingCloudKit: Bool = false,
+                              cloudKitContainerIdentifier: String? = nil,
                               isInMemory: Bool = false)
         -> NSPersistentContainer {
         let container: NSPersistentContainer
-        if usingCloudKit, #available(iOS 13.0, *) {
+        if #available(iOS 13.0, *), cloudKitContainerIdentifier != nil {
             let cloudKitContainer = NSPersistentCloudKitContainer(name: modelName)
             container = cloudKitContainer
         } else {
             container = NSPersistentContainer(name: modelName)
         }
 
-        var storeDescription: NSPersistentStoreDescription?
+        let storeDescription: NSPersistentStoreDescription
         if isInMemory {
             storeDescription = NSPersistentStoreDescription()
-            storeDescription?.type = NSInMemoryStoreType
-            storeDescription?.shouldAddStoreAsynchronously = false
+            storeDescription.type = NSInMemoryStoreType
+            storeDescription.shouldAddStoreAsynchronously = false
         } else if let groupIdentifier = applicationGroupIdentifier {
             guard let fileContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupIdentifier) else {
                 fatalError("Shared file container could not be created.")
             }
             let storeURL = fileContainer.appendingPathComponent("\(modelName).sqlite")
             storeDescription = NSPersistentStoreDescription(url: storeURL)
+        } else {
+            storeDescription = NSPersistentStoreDescription()
         }
-        if let description = storeDescription {
-            container.persistentStoreDescriptions = [description]
+
+        if #available(iOS 13.0, *),
+            let cloudKitContainerIdentifier = cloudKitContainerIdentifier {
+            storeDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: cloudKitContainerIdentifier)
         }
+        container.persistentStoreDescriptions = [storeDescription]
 
         container.loadPersistentStores(completionHandler: { description, error in
             if let error = error {
@@ -55,13 +60,14 @@ extension NSPersistentContainer {
             }
         })
 
-        #if DEBUG
-            if #available(iOS 13.0, *) {
+        if #available(iOS 13.0, *) {
+            #if DEBUG
                 if let cloudKitContainer = container as? NSPersistentCloudKitContainer {
                     try! cloudKitContainer.initializeCloudKitSchema()
                 }
-            }
-        #endif
+
+            #endif
+        }
 
         container.viewContext.automaticallyMergesChangesFromParent = true
 

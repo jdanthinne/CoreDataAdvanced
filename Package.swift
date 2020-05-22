@@ -17,10 +17,5 @@ let package = Package(
             dependencies: [],
             path: "Sources"
         ),
-        .testTarget(
-            name: "CoreDataAdvancedTests",
-            dependencies: ["CoreDataAdvanced"],
-            path: "Tests"
-        ),
     ]
 )
