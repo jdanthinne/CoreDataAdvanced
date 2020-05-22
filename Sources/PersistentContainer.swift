@@ -9,7 +9,7 @@
 @_exported import CoreData
 
 @available(iOS 10.0, *)
-extension NSPersistentStore {
+extension NSPersistentContainer {
     /// Create the app main context.
     ///
     /// - Parameters:
@@ -17,12 +17,12 @@ extension NSPersistentStore {
     ///   - applicationGroupIdentifier: optional application group identifier
     ///   - usingCloudKit: If true, uses NSPersistentCloudKitContainer
     ///   - isInMemory: if true, creates an in-memory context
-    /// - Returns: the created NSPersistentStore
+    /// - Returns: the created NSPersistentContainer
     public static func create(modelName: String,
                               applicationGroupIdentifier: String? = nil,
                               usingCloudKit: Bool = false,
                               isInMemory: Bool = false)
-        -> NSManagedObjectContext {
+        -> NSPersistentContainer {
         let container: NSPersistentContainer
         if usingCloudKit, #available(iOS 13.0, *) {
             let cloudKitContainer = NSPersistentCloudKitContainer(name: modelName)
