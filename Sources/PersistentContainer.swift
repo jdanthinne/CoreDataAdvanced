@@ -9,30 +9,29 @@
 @_exported import CoreData
 
 @available(iOS 10.0, *)
-extension NSManagedObjectContext {
+extension NSPersistentStore {
     /// Create the app main context.
     ///
     /// - Parameters:
-    ///   - models: list of model classes
     ///   - modelName: name of the CoreData model
     ///   - applicationGroupIdentifier: optional application group identifier
+    ///   - usingCloudKit: If true, uses NSPersistentCloudKitContainer
     ///   - isInMemory: if true, creates an in-memory context
-    /// - Returns: the created NSManagedObjectContext
-    public static func createMainContext(with models: [AnyClass],
-                                         modelName: String,
-                                         applicationGroupIdentifier: String? = nil,
-                                         usingCloudKit: Bool = false,
-                                         isInMemory: Bool = false)
+    /// - Returns: the created NSPersistentStore
+    public static func create(modelName: String,
+                              applicationGroupIdentifier: String? = nil,
+                              usingCloudKit: Bool = false,
+                              isInMemory: Bool = false)
         -> NSManagedObjectContext {
         let container: NSPersistentContainer
         if usingCloudKit, #available(iOS 13.0, *) {
-            container = NSPersistentCloudKitContainer(name: modelName)
+            let cloudKitContainer = NSPersistentCloudKitContainer(name: modelName)
+            #if DEBUG
+                try! cloudKitContainer.initializeCloudKitSchema()
+            #endif
+            container = cloudKitContainer
         } else {
-            guard let model = NSManagedObjectModel.mergedModel(from: models.map { Bundle(for: $0) }) else {
-                fatalError("Unable to create CoreData model")
-            }
-
-            container = NSPersistentContainer(name: modelName, managedObjectModel: model)
+            container = NSPersistentContainer(name: modelName)
         }
 
         var storeDescription: NSPersistentStoreDescription?
@@ -59,6 +58,8 @@ extension NSManagedObjectContext {
             }
         })
 
-        return container.viewContext
+        container.viewContext.automaticallyMergesChangesFromParent = true
+
+        return container
     }
 }
