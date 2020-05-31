@@ -37,14 +37,23 @@ extension NSPersistentContainer {
             storeDescription = NSPersistentStoreDescription()
             storeDescription.type = NSInMemoryStoreType
             storeDescription.shouldAddStoreAsynchronously = false
-        } else if let groupIdentifier = applicationGroupIdentifier {
-            guard let fileContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupIdentifier) else {
-                fatalError("Shared file container could not be created.")
-            }
-            let storeURL = fileContainer.appendingPathComponent("\(modelName).sqlite")
-            storeDescription = NSPersistentStoreDescription(url: storeURL)
         } else {
-            storeDescription = NSPersistentStoreDescription()
+            let storeDirectory: URL
+            if let groupIdentifier = applicationGroupIdentifier {
+                guard let fileContainer = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupIdentifier) else {
+                    fatalError("Shared file container could not be created.")
+                }
+                storeDirectory = fileContainer
+            } else {
+                guard let documentsFolder = FileManager.default.urls(for: .documentDirectory,
+                                                                     in: .userDomainMask).first
+                else {
+                    fatalError("Unable to get documents directory")
+                }
+                storeDirectory = documentsFolder
+            }
+            let storeURL = storeDirectory.appendingPathComponent("\(modelName).sqlite")
+            storeDescription = NSPersistentStoreDescription(url: storeURL)
         }
 
         if #available(iOS 13.0, *),
