@@ -45,7 +45,7 @@ extension NSPersistentContainer {
                 }
                 storeDirectory = fileContainer
             } else {
-                guard let documentsFolder = FileManager.default.urls(for: .documentDirectory,
+                guard let documentsFolder = FileManager.default.urls(for: .applicationSupportDirectory,
                                                                      in: .userDomainMask).first
                 else {
                     fatalError("Unable to get documents directory")
