@@ -60,6 +60,8 @@ extension NSPersistentContainer {
             let cloudKitContainerIdentifier = cloudKitContainerIdentifier {
             storeDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: cloudKitContainerIdentifier)
         }
+        
+        storeDescription.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         container.persistentStoreDescriptions = [storeDescription]
 
         container.loadPersistentStores(completionHandler: { description, error in
