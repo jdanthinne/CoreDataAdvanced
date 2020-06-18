@@ -18,12 +18,12 @@ extension NSPersistentContainer {
     ///   - applicationGroupIdentifier: optional application group identifier
     ///   - cloudKitContainerIdentifier: If provided, uses NSPersistentCloudKitContainer
     ///   - isInMemory: if true, creates an in-memory context
-    /// - Returns: the created NSPersistentContainer
-    public static func create(modelName: String,
-                              applicationGroupIdentifier: String? = nil,
-                              cloudKitContainerIdentifier: String? = nil,
-                              isInMemory: Bool = false)
-        -> NSPersistentContainer {
+    /// - Returns: the created NSPersistentContainer view and background contexts
+    public static func createContexts(modelName: String,
+                                      applicationGroupIdentifier: String? = nil,
+                                      cloudKitContainerIdentifier: String? = nil,
+                                      isInMemory: Bool = false)
+        -> (viewContext: NSManagedObjectContext, backgroundContext: NSManagedObjectContext) {
         let container: NSPersistentContainer
         if #available(iOS 13.0, *), cloudKitContainerIdentifier != nil {
             let cloudKitContainer = NSPersistentCloudKitContainer(name: modelName)
@@ -90,7 +90,8 @@ extension NSPersistentContainer {
         }
 
         container.viewContext.automaticallyMergesChangesFromParent = true
+        let backgroundContext = container.newBackgroundContext()
 
-        return container
+        return (viewContext: container.viewContext, backgroundContext: backgroundContext)
     }
 }
