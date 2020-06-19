@@ -90,7 +90,9 @@ extension NSPersistentContainer {
         }
 
         container.viewContext.automaticallyMergesChangesFromParent = true
+            
         let backgroundContext = container.newBackgroundContext()
+        backgroundContext.mergePolicy = NSMergePolicy(merge: .overwriteMergePolicyType)
 
         return (viewContext: container.viewContext, backgroundContext: backgroundContext)
     }
